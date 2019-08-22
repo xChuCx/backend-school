@@ -1,0 +1,40 @@
+version: '3.7'
+
+services:
+
+  citizens:
+    build:
+      context: ./services/citizens
+      dockerfile: Dockerfile
+    volumes:
+      - './services/citizens:/usr/src/app'
+    ports:
+      - 5001:5000
+    environment:
+      - FLASK_ENV=development
+      - APP_SETTINGS=project.config.DevelopmentConfig
+      - FLASK_APP=manage.py
+
+
+
+  couch:
+    build:
+      context: ./services/citizens/project/db
+      dockerfile: Dockerfile
+    volumes:
+      - ~/couch/node1:/opt/couchbase/var
+    ports:
+      - 8091:8091
+
+
+
+  nginx:
+    build:
+      context: ./services/nginx
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - 80:80
+    depends_on:
+      - citizens
+
