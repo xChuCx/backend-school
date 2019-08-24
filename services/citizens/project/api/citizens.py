@@ -71,7 +71,7 @@ class PatchCitizen(Resource):
         # validate
         er = schema_validate(patch_data, 'patch_schema')
         if er:
-            return response(400,er)
+            return response(400, er)
         # если изменяются связи(relatives)
         if "relatives" in patch_data:
             # найти всех граждан, для которых нужно изменить связи(relatives)
@@ -88,8 +88,8 @@ class PatchCitizen(Resource):
             break_relatives = [x for x in relatives["relatives"] if x not in new]
             if break_relatives:
                 # убрать связи(relatives)
-                upd_query = 'UPDATE analitycDB SET i.relatives = ARRAY_REMOVE(i.relatives, $1)  FOR i IN citizens ' \
-                            'WHEN i.citizen_id in $2 END WHERE META().id = $3'
+                upd_query = 'UPDATE analitycDB USE KEYS $3 SET i.relatives = ARRAY_REMOVE(i.relatives, $1)  FOR i IN ' \
+                            'citizens WHEN i.citizen_id in $2 END'
                 try:
                     db.n1ql_query(N1QLQuery(upd_query, citizen_id, break_relatives, import_id)).execute()
                 except CouchbaseError as e:
@@ -98,8 +98,8 @@ class PatchCitizen(Resource):
             add_relatives = [x for x in new if x not in relatives["relatives"]]
             if add_relatives:
                 # добавить связи(relatives)
-                upd_query = 'UPDATE analitycDB SET i.relatives = ARRAY_APPEND(i.relatives, $1)  FOR i IN citizens ' \
-                            'WHEN i.citizen_id in $2 END WHERE META().id = $3'
+                upd_query = 'UPDATE analitycDB USE KEYS $3 SET i.relatives = ARRAY_APPEND(i.relatives, $1) FOR i IN ' \
+                            'citizens WHEN i.citizen_id in $2 END'
                 try:
                     db.n1ql_query(N1QLQuery(upd_query, citizen_id, add_relatives, import_id)).execute()
                 except CouchbaseError as e:

@@ -150,7 +150,57 @@ class TestCitizensService(BaseTestCase):
                 content_type='application/json')
             self.assertEqual(response.status_code, 400)
 
-    def test_06_patch(self):
+    def test_06_patch_incorrect_id(self):
+        """Ensure error is thrown if the id does not exist."""
+        with self.client:
+            response = self.client.patch(
+                '/imports/1/citizens/99999',
+                data=json.dumps({"town": "Киев"}),
+                content_type='application/json',
+            )
+            self.assertEqual(response.status_code, 400)
+
+    def test_07_patch_incorrect_import(self):
+        """Ensure error is thrown if the id does not exist."""
+        with self.client:
+            response = self.client.patch(
+                '/imports/0/citizens/2',
+                data=json.dumps({"town": "Киев"}),
+                content_type='application/json',
+            )
+            self.assertEqual(response.status_code, 400)
+
+    def test_08_patch_incorrect_int(self):
+        """Ensure error is thrown if invalid types"""
+        with self.client:
+            response = self.client.patch(
+                '/imports/1/citizens/2',
+                data=json.dumps({"apartment": "6"}),
+                content_type='application/json',
+            )
+            self.assertEqual(response.status_code, 400)
+
+    def test_09_patch_incorrect_date(self):
+        """Ensure error is thrown if invalid types"""
+        with self.client:
+            response = self.client.patch(
+                '/imports/1/citizens/2',
+                data=json.dumps({"birth_date": "33.12.1986"}),
+                content_type='application/json',
+            )
+            self.assertEqual(response.status_code, 400)
+
+    def test_10_patch_unknown(self):
+        """Ensure error is thrown if unknown field"""
+        with self.client:
+            response = self.client.patch(
+                '/imports/1/citizens/2',
+                data=json.dumps({"citizen_id": 5}),
+                content_type='application/json',
+            )
+            self.assertEqual(response.status_code, 400)
+
+    def test_11_patch(self):
         """2: PATCH test"""
         with self.client:
             response = self.client.patch(
@@ -179,56 +229,6 @@ class TestCitizensService(BaseTestCase):
             self.assertEqual(resp['data']['birth_date'], "09.09.1996")
             self.assertEqual(resp['data']['gender'], "male")
             self.assertEqual(resp['data']['relatives'], [3])
-
-    def test_07_patch_incorrect_id(self):
-        """Ensure error is thrown if the id does not exist."""
-        with self.client:
-            response = self.client.patch(
-                '/imports/1/citizens/99999',
-                data=json.dumps({"town": "Киев"}),
-                content_type='application/json',
-            )
-            self.assertEqual(response.status_code, 400)
-
-    def test_08_patch_incorrect_import(self):
-        """Ensure error is thrown if the id does not exist."""
-        with self.client:
-            response = self.client.patch(
-                '/imports/0/citizens/2',
-                data=json.dumps({"town": "Киев"}),
-                content_type='application/json',
-            )
-            self.assertEqual(response.status_code, 400)
-
-    def test_09_patch_incorrect_int(self):
-        """Ensure error is thrown if invalid types"""
-        with self.client:
-            response = self.client.patch(
-                '/imports/1/citizens/2',
-                data=json.dumps({"apartment": "6"}),
-                content_type='application/json',
-            )
-            self.assertEqual(response.status_code, 400)
-
-    def test_10_patch_incorrect_date(self):
-        """Ensure error is thrown if invalid types"""
-        with self.client:
-            response = self.client.patch(
-                '/imports/1/citizens/2',
-                data=json.dumps({"birth_date": "33.12.1986"}),
-                content_type='application/json',
-            )
-            self.assertEqual(response.status_code, 400)
-
-    def test_11_patch_unknown(self):
-        """Ensure error is thrown if unknown field"""
-        with self.client:
-            response = self.client.patch(
-                '/imports/1/citizens/2',
-                data=json.dumps({"citizen_id": 5}),
-                content_type='application/json',
-            )
-            self.assertEqual(response.status_code, 400)
 
     def test_12_get_citizens(self):
         """3: GET citizens test"""
