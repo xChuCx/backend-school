@@ -14,9 +14,9 @@ before_install:
 
 before_script:
   - docker-compose -f docker-compose-test.yml up -d --build
+  - sleep 60
 
 script:
-  - "travis_wait 60 sleep 3600 &"
   - docker-compose exec citizens python manage.py test
 
 after_script:
