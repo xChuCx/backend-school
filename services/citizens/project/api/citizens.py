@@ -28,14 +28,12 @@ class DataImports(Resource):
             db.insert(str(import_id), post_data)
             # создание индексов
             if import_id == 1:
-                p_idx = 'CREATE PRIMARY INDEX `p_idx` ON  analitycDB USING GSI WITH {"defer_build":true}'
+                p_idx = 'CREATE PRIMARY INDEX `p_idx` ON  analitycDB USING GSI '
                 c_idx = 'CREATE INDEX c_index ON analitycDB(DISTINCT ARRAY c.citizen_id FOR c IN citizens END) USING ' \
-                        'GSI WITH {"defer_build":true}'
-                b_idx = 'BUILD INDEX ON analitycDB(p_idx, c_index) USING GSI'
+                        'GSI '
                 try:
                     db.n1ql_query(N1QLQuery(p_idx)).execute()
                     db.n1ql_query(N1QLQuery(c_idx)).execute()
-                    db.n1ql_query(N1QLQuery(b_idx)).execute()
                 except CouchbaseError as e:
                     log_error(e)
                     return response(400, COUCH_ERROR)
