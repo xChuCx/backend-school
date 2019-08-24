@@ -24,10 +24,21 @@ class DataImports(Resource):
         if er:
             return response(400, er)
         try:
-            import_id = db.counter('import_id', delta=5, initial=1)
-            # !!! если каунтер вернет 1 сделать индексы в бд
-            post_data = post_data.pop('citizens')
+            import_id = db.counter('import_id', delta=5, initial=1).value
             db.insert(str(import_id), post_data)
+            # создание индексов
+            if import_id == 1:
+                p_idx = 'CREATE PRIMARY INDEX `p_idx` ON  analitycDB USING GSI WITH {"defer_build":true}'
+                c_idx = 'CREATE INDEX c_index ON analitycDB(DISTINCT ARRAY c.citizen_id FOR c IN citizens END) USING ' \
+                        'GSI WITH {"defer_build":true}'
+                b_idx = 'BUILD INDEX ON analitycDB(p_idx, c_index) USING GSI'
+                try:
+                    db.n1ql_query(N1QLQuery(p_idx)).execute()
+                    db.n1ql_query(N1QLQuery(c_idx)).execute()
+                    db.n1ql_query(N1QLQuery(b_idx)).execute()
+                except CouchbaseError as e:
+                    log_error(e)
+                    return response(400, COUCH_ERROR)
             response_object = response(201, {
                 'data': {
                     'import_id': str(import_id)
@@ -65,7 +76,7 @@ class PatchCitizen(Resource):
         if "relatives" in patch_data:
             # найти всех граждан, для которых нужно изменить связи(relatives)
             query = 'SELECT FIRST v.relatives FOR v IN citizens WHEN v.citizen_id = $1 END as relatives FROM ' \
-                    'analitycDB WHERE META().id = $2'
+                    'analitycDB USE KEYS $2'
             try:
                 relatives = db.n1ql_query(N1QLQuery(query, citizen_id, import_id)).get_single_result()
             except CouchbaseError as e:
@@ -158,6 +169,9 @@ class Birthdays(Resource):
         except CouchbaseError as e:
             log_error(e)
             return response(400, COUCH_ERROR)
+
+        if not data:
+            return response(400, WRONG_IMPORT)
 
         stats = {}
         for month in data:

@@ -3,7 +3,7 @@
 
 class BaseConfig:
     """Base configuration"""
-    TESTING = True
+    TESTING = False
     SECRET_KEY = 'my_precious'
     JSON_AS_ASCII = False
     JSON_SORT_KEYS = False
