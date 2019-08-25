@@ -1,0 +1,13 @@
+[Unit]
+Description=App service
+Requires=docker.service
+After=docker.service
+
+[Service]
+Restart=always
+WorkingDirectory=/home/entrant/xChuCx/backend-school
+ExecStart=/usr/local/bin/docker-compose -f docker-compose.yml up
+ExecStop=/usr/local/bin/docker-compose -f docker-compose.yml down
+
+[Install]
+WantedBy=multi-user.target
