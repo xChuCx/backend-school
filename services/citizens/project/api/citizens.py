@@ -135,15 +135,15 @@ class PercentileAge(Resource):
         if not data:
             return response(400, WRONG_IMPORT)
 
-        # !!! interpolation='linear'
         stats = []
+        np.set_printoptions(precision=2)
         for i in data:
             i['ages'] = [calculateAge(x) for x in i['ages']]
             stat = {
                 "town": i["town"],
-                "p50": np.percentile(i['ages'], 50),
-                "p75": np.percentile(i['ages'], 75),
-                "p99": np.percentile(i['ages'], 99)
+                "p50": np.percentile(i['ages'], 50, interpolation='linear'),
+                "p75": np.percentile(i['ages'], 75, interpolation='linear'),
+                "p99": np.percentile(i['ages'], 99, interpolation='linear')
             }
             stats.append(stat)
 
